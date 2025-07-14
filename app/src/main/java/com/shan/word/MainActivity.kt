@@ -15,9 +15,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,14 +43,46 @@ import kotlinx.coroutines.launch
 import java.io.InputStream
 import androidx.lifecycle.lifecycleScope
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 
 class WordViewModel(private val db: WordDatabase) : ViewModel() {
-    val words: StateFlow<List<Word>> = db.wordDao().getAllWords()
+    val filenames: StateFlow<List<Filename>> = db.wordDao().getAllFilenames()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun insertWords(words: List<String>) {
+    private val _selectedFilenameId = MutableStateFlow<Int?>(null)
+    val selectedFilenameId: StateFlow<Int?> get() = _selectedFilenameId
+
+    val wordsForSelectedFile: StateFlow<List<Word>> =
+        _selectedFilenameId.flatMapLatest { id ->
+            if (id == null) kotlinx.coroutines.flow.flowOf(emptyList())
+            else db.wordDao().getWordsForFilenameId(id)
+        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    fun selectFilenameId(id: Int?) {
+        _selectedFilenameId.value = id
+    }
+
+    fun insertWords(words: List<String>, filename: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            db.wordDao().insertAll(words.map { Word(word = it) })
+            // Insert filename if not exists, get its id
+            var filenameId = db.wordDao().getFilenameByName(filename)?.id
+            if (filenameId == null) {
+                filenameId = db.wordDao().insertFilename(Filename(name = filename)).toInt()
+            }
+            db.wordDao().insertAll(words.map { Word(
+                word = it,
+                filenameId = filenameId!!
+            ) })
+        }
+    }
+
+    fun deleteAllWords() {
+        viewModelScope.launch(Dispatchers.IO) {
+            db.wordDao().deleteAllWords()
         }
     }
 }
@@ -70,24 +109,28 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            WordTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Button(onClick = { pdfPicker.launch("application/pdf") }) {
-                            Text("Select PDF")
+            val navController = rememberNavController()
+            NavHost(navController = navController, startDestination = "main") {
+                composable("main") {
+                    MainScreen(
+                        onSelectPdf = { pdfPicker.launch("application/pdf") },
+                        onDeleteAll = { viewModel.deleteAllWords() },
+                        filenamesFlow = viewModel.filenames,
+                        onFileSelected = { filename ->
+                            viewModel.selectFilenameId(filename.id)
+                            navController.navigate("words/${filename.id}/${filename.name}")
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        val words by viewModel.words.collectAsState()
-                        LazyColumn {
-                            items(words) { word ->
-                                Card(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)) {
-                                    Text(word.word, modifier = Modifier.padding(16.dp))
-                                }
-                            }
-                        }
-                    }
+                    )
+                }
+                composable("words/{filenameId}/{filenameName}") { backStackEntry ->
+                    val filenameId = backStackEntry.arguments?.getString("filenameId")?.toIntOrNull()
+                    val filenameName = backStackEntry.arguments?.getString("filenameName") ?: ""
+                    WordsScreen(
+                        filenameId = filenameId,
+                        filenameName = filenameName,
+                        wordsFlow = viewModel.wordsForSelectedFile,
+                        onBack = { navController.popBackStack() }
+                    )
                 }
             }
         }
@@ -102,9 +145,101 @@ class MainActivity : ComponentActivity() {
                 document.close()
                 val words = text.split("\\W+".toRegex())
                     .map { it.trim().lowercase() }
-                    .filter { it.isNotBlank() }
+                    .filter { it.isNotBlank() && it.length > 2 && it.all { ch -> ch.isLetter() } }
                     .distinct()
-                viewModel.insertWords(words)
+                val filename = getFileName(uri)
+                viewModel.insertWords(words, filename)
+            }
+        }
+    }
+
+    private fun getFileName(uri: Uri): String {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    result = it.getString(it.getColumnIndexOrThrow(android.provider.OpenableColumns.DISPLAY_NAME))
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.path
+            val cut = result?.lastIndexOf('/')
+            if (cut != null && cut != -1) {
+                result = result?.substring(cut + 1)
+            }
+        }
+        return result ?: "unknown.pdf"
+    }
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreen(
+    onSelectPdf: () -> Unit,
+    onDeleteAll: () -> Unit,
+    filenamesFlow: StateFlow<List<Filename>>,
+    onFileSelected: (Filename) -> Unit
+) {
+    val filenames by filenamesFlow.collectAsState()
+    var expanded by remember { mutableStateOf(false) }
+    var selectedFilename by remember { mutableStateOf<Filename?>(null) }
+    Column(modifier = Modifier.fillMaxSize()) {
+        CenterAlignedTopAppBar(title = { Text("Word PDF Parser") })
+        Column(modifier = Modifier.padding(16.dp)) {
+            Button(onClick = onSelectPdf) {
+                Text("Select PDF")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onDeleteAll) {
+                Text("Delete All Words")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Box {
+                Button(onClick = { expanded = true }, enabled = filenames.isNotEmpty()) {
+                    Text(selectedFilename?.name ?: "Select a file")
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    filenames.forEach { filename ->
+                        DropdownMenuItem(onClick = {
+                            selectedFilename = filename
+                            onFileSelected(filename)
+                            expanded = false
+                        }, text = { Text(filename.name) })
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun WordsScreen(
+    filenameId: Int?,
+    filenameName: String,
+    wordsFlow: StateFlow<List<Word>>,
+    onBack: () -> Unit
+) {
+    val words by wordsFlow.collectAsState()
+    val uniqueWords = remember(words) { words.map { it.word }.distinct() }
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text(filenameName) },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    androidx.compose.material3.Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                }
+            }
+        )
+        LazyColumn(modifier = Modifier.padding(16.dp)) {
+            items(uniqueWords) { word ->
+                Card(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)) {
+                    Text(word, modifier = Modifier.padding(16.dp))
+                }
             }
         }
     }
