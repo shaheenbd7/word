@@ -1,7 +1,5 @@
 package com.shan.word
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,45 +7,56 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.shan.word.ui.theme.WordTheme
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.InputStream
-import androidx.lifecycle.lifecycleScope
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 
 class WordViewModel(private val db: WordDatabase) : ViewModel() {
     val filenames: StateFlow<List<Filename>> = db.wordDao().getAllFilenames()
@@ -55,6 +64,12 @@ class WordViewModel(private val db: WordDatabase) : ViewModel() {
 
     private val _selectedFilenameId = MutableStateFlow<Int?>(null)
     val selectedFilenameId: StateFlow<Int?> get() = _selectedFilenameId
+
+    private val _parsingInProgress = MutableStateFlow(false)
+    val parsingInProgress: StateFlow<Boolean> get() = _parsingInProgress
+
+    private val _wordsFound = MutableStateFlow(0)
+    val wordsFound: StateFlow<Int> get() = _wordsFound
 
     val wordsForSelectedFile: StateFlow<List<Word>> =
         _selectedFilenameId.flatMapLatest { id ->
@@ -84,6 +99,14 @@ class WordViewModel(private val db: WordDatabase) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             db.wordDao().deleteAllWords()
         }
+    }
+
+    fun setParsingInProgress(inProgress: Boolean) {
+        _parsingInProgress.value = inProgress
+    }
+
+    fun setWordsFound(count: Int) {
+        _wordsFound.value = count
     }
 }
 
@@ -119,7 +142,9 @@ class MainActivity : ComponentActivity() {
                         onFileSelected = { filename ->
                             viewModel.selectFilenameId(filename.id)
                             navController.navigate("words/${filename.id}/${filename.name}")
-                        }
+                        },
+                        parsingInProgress = viewModel.parsingInProgress,
+                        wordsFound = viewModel.wordsFound
                     )
                 }
                 composable("words/{filenameId}/{filenameName}") { backStackEntry ->
@@ -137,6 +162,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun processPdf(uri: Uri) {
+        viewModel.setParsingInProgress(true)
+        viewModel.setWordsFound(0)
         lifecycleScope.launch(Dispatchers.IO) {
             val inputStream: InputStream? = contentResolver.openInputStream(uri)
             inputStream?.use {
@@ -147,9 +174,14 @@ class MainActivity : ComponentActivity() {
                     .map { it.trim().lowercase() }
                     .filter { it.isNotBlank() && it.length > 2 && it.all { ch -> ch.isLetter() } }
                     .distinct()
+                // Update progress as we process words
+                words.forEachIndexed { idx, _ ->
+                    viewModel.setWordsFound(idx + 1)
+                }
                 val filename = getFileName(uri)
                 viewModel.insertWords(words, filename)
             }
+            viewModel.setParsingInProgress(false)
         }
     }
 
@@ -180,9 +212,13 @@ fun MainScreen(
     onSelectPdf: () -> Unit,
     onDeleteAll: () -> Unit,
     filenamesFlow: StateFlow<List<Filename>>,
-    onFileSelected: (Filename) -> Unit
+    onFileSelected: (Filename) -> Unit,
+    parsingInProgress: StateFlow<Boolean>,
+    wordsFound: StateFlow<Int>
 ) {
     val filenames by filenamesFlow.collectAsState()
+    val parsing by parsingInProgress.collectAsState()
+    val found by wordsFound.collectAsState()
     var expanded by remember { mutableStateOf(false) }
     var selectedFilename by remember { mutableStateOf<Filename?>(null) }
     Column(modifier = Modifier.fillMaxSize()) {
@@ -209,6 +245,16 @@ fun MainScreen(
                         }, text = { Text(filename.name) })
                     }
                 }
+            }
+            if (parsing) {
+                Spacer(modifier = Modifier.height(16.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(50.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 5.dp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Parsing... $found words found")
             }
         }
     }
