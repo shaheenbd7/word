@@ -1,26 +1,21 @@
-package com.shan.word
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.ForeignKey
+package com.shan.word.data.local.entity
 
-@Entity(tableName = "filenames")
-data class Filename(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val name: String
-)
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "words",
     foreignKeys = [
         ForeignKey(
-            entity = Filename::class,
+            entity = FilenameEntity::class,
             parentColumns = ["id"],
             childColumns = ["filenameId"],
             onDelete = ForeignKey.CASCADE
         )
     ]
 )
-data class Word(
+data class WordEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val word: String,
     val filenameId: Int

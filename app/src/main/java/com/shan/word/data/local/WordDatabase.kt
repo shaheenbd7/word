@@ -1,10 +1,14 @@
-package com.shan.word
+package com.shan.word.data.local
+
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.shan.word.data.local.dao.WordDao
+import com.shan.word.data.local.entity.WordEntity
+import com.shan.word.data.local.entity.FilenameEntity
 
-@Database(entities = [Word::class, Filename::class], version = 3, exportSchema = false)
+@Database(entities = [WordEntity::class, FilenameEntity::class], version = 3, exportSchema = false)
 abstract class WordDatabase : RoomDatabase() {
     abstract fun wordDao(): WordDao
 
