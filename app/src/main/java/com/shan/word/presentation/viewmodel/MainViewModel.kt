@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,13 +32,13 @@ class MainViewModel @Inject constructor(
     val wordsFound: StateFlow<Int> get() = _wordsFound
 
     fun insertWords(words: List<String>, filename: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             insertWordsUseCase(words, filename)
         }
     }
 
     fun deleteAllWords() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             deleteAllWordsUseCase()
         }
     }
