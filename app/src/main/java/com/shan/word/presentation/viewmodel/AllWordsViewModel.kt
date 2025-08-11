@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
@@ -16,5 +17,8 @@ class AllWordsViewModel @Inject constructor(
 ) : ViewModel() {
 
     val allWords: StateFlow<List<Word>> = getAllWordsUseCase()
+        .onEach { words ->
+            println("AllWordsViewModel: Received ${words.size} words")
+        }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 } 

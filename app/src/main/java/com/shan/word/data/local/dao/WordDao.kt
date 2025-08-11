@@ -35,4 +35,10 @@ interface WordDao {
 
     @Update
     suspend fun updateWord(word: WordEntity)
+
+    @Query("SELECT * FROM words WHERE isFavorite = 1")
+    fun getFavoriteWords(): kotlinx.coroutines.flow.Flow<List<WordEntity>>
+
+    @Query("UPDATE words SET isFavorite = :isFavorite WHERE word = :word")
+    suspend fun updateFavoriteStatus(word: String, isFavorite: Boolean)
 } 

@@ -20,7 +20,11 @@ object WordMapper {
             synonyms = entity.synonyms?.let { parseJsonList(it) } ?: emptyList(),
             antonyms = entity.antonyms?.let { parseJsonList(it) } ?: emptyList(),
             examples = entity.examples?.let { parseJsonList(it) } ?: emptyList(),
-            definition = entity.definition
+            definition = entity.definition,
+            isFavorite = entity.isFavorite,
+            audioUrl = entity.audioUrl,
+            partOfSpeech = entity.partOfSpeech,
+            lastUpdated = entity.lastUpdated
         )
     }
 
@@ -34,7 +38,11 @@ object WordMapper {
             synonyms = domain.synonyms.takeIf { it.isNotEmpty() }?.let { gson.toJson(it) },
             antonyms = domain.antonyms.takeIf { it.isNotEmpty() }?.let { gson.toJson(it) },
             examples = domain.examples.takeIf { it.isNotEmpty() }?.let { gson.toJson(it) },
-            definition = domain.definition
+            definition = domain.definition,
+            isFavorite = domain.isFavorite,
+            audioUrl = domain.audioUrl,
+            partOfSpeech = domain.partOfSpeech,
+            lastUpdated = domain.lastUpdated
         )
     }
     

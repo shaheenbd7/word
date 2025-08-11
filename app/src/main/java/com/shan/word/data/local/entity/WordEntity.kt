@@ -26,5 +26,9 @@ data class WordEntity(
     val synonyms: String? = null, // JSON string
     val antonyms: String? = null, // JSON string
     val examples: String? = null, // JSON string
-    val definition: String? = null
+    val definition: String? = null,
+    val isFavorite: Boolean = false,
+    val audioUrl: String? = null,
+    val partOfSpeech: String? = null,
+    val lastUpdated: Long = System.currentTimeMillis()
 ) 

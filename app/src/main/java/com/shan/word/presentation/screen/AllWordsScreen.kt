@@ -31,6 +31,28 @@ fun AllWordsScreen(
     val uniqueWords = remember(words) { words.map { it.word }.distinct().sorted() }
     var searchQuery by remember { mutableStateOf("") }
     
+    // Debug: Log the number of words
+    LaunchedEffect(words) {
+        println("AllWordsScreen: Received ${words.size} words")
+    }
+    
+    // Show loading state if no words are available yet
+    if (words.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Loading words...")
+            }
+        }
+        return
+    }
+    
     val filteredWords = remember(uniqueWords, searchQuery) {
         if (searchQuery.isEmpty()) {
             uniqueWords
@@ -39,7 +61,7 @@ fun AllWordsScreen(
         }
     }
     
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().padding(bottom = 30.dp)) {
         TopAppBar(
             title = { Text("All Words (${filteredWords.size})") },
             navigationIcon = {

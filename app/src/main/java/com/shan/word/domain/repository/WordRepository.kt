@@ -13,4 +13,6 @@ interface WordRepository {
     suspend fun getFilenameByName(name: String): Filename?
     suspend fun getWordByText(word: String): Word?
     suspend fun updateWordDetails(word: Word)
+    fun getFavoriteWords(): Flow<List<Word>>
+    suspend fun toggleFavorite(word: String)
 } 

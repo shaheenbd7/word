@@ -9,5 +9,9 @@ data class Word(
     val synonyms: List<String> = emptyList(),
     val antonyms: List<String> = emptyList(),
     val examples: List<String> = emptyList(),
-    val definition: String? = null
+    val definition: String? = null,
+    val isFavorite: Boolean = false,
+    val audioUrl: String? = null,
+    val partOfSpeech: String? = null,
+    val lastUpdated: Long = System.currentTimeMillis()
 ) 

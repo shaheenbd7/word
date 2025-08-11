@@ -14,11 +14,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.launch
 import com.shan.word.presentation.screen.MainScreen
 import com.shan.word.presentation.screen.WordsScreen
 import com.shan.word.presentation.screen.WordDetailScreen
 import com.shan.word.presentation.screen.AllWordsScreen
+import com.shan.word.presentation.screen.HomeScreen
 import com.shan.word.presentation.screen.AppNavigationDrawer
 import com.shan.word.presentation.viewmodel.MainViewModel
 import com.shan.word.presentation.viewmodel.WordsViewModel
@@ -40,6 +42,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Enable edge-to-edge but with proper insets handling
         enableEdgeToEdge()
         PDFBoxResourceLoader.init(applicationContext)
 
@@ -55,23 +58,53 @@ class MainActivity : ComponentActivity() {
                 
                 AppNavigationDrawer(
                     drawerState = drawerState,
-                    onSelectPdf = { pdfPicker.launch("application/pdf") },
-                    onDeleteAll = { mainViewModel.deleteAllWords() },
+                    onSelectPdf = { 
+                        pdfPicker.launch("application/pdf")
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    },
+                    onDeleteAll = { 
+                        mainViewModel.deleteAllWords()
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    },
                     onShowAllWords = {
                         navController.navigate("allWords") {
-                            popUpTo("allWords") { inclusive = true }
+                            popUpTo("home") { inclusive = false }
+                        }
+                        scope.launch {
+                            drawerState.close()
                         }
                     },
                     onSelectFile = {
-                        // This will be handled by the dropdown in MainScreen
-                        navController.navigate("main")
+                        navController.navigate("main") {
+                            popUpTo("home") { inclusive = false }
+                        }
+                        scope.launch {
+                            drawerState.close()
+                        }
                     }
                 ) {
-                    NavHost(navController = navController, startDestination = "allWords") {
+                    NavHost(navController = navController, startDestination = "home") {
+                        composable("home") {
+                            HomeScreen(
+                                onSelectPdf = { pdfPicker.launch("application/pdf") },
+                                onDeleteAll = { mainViewModel.deleteAllWords() },
+                                onOpenDrawer = {
+                                    scope.launch {
+                                        drawerState.open()
+                                    }
+                                },
+                                parsingInProgress = mainViewModel.parsingInProgress.collectAsState().value,
+                                wordsFound = mainViewModel.wordsFound.collectAsState().value
+                            )
+                        }
                         composable("allWords") {
                             AllWordsScreen(
                                 wordsFlow = allWordsViewModel.allWords,
-                                onBack = { /* No back action needed for main screen */ },
+                                onBack = { navController.popBackStack() },
                                 navController = navController,
                                 onOpenDrawer = {
                                     scope.launch {
@@ -123,12 +156,7 @@ class MainActivity : ComponentActivity() {
                             val word = backStackEntry.arguments?.getString("word") ?: ""
                             WordDetailScreen(
                                 word = word, 
-                                onBack = { navController.popBackStack() },
-                                onOpenDrawer = {
-                                    scope.launch {
-                                        drawerState.open()
-                                    }
-                                }
+                                onBack = { navController.popBackStack() }
                             )
                         }
                     }

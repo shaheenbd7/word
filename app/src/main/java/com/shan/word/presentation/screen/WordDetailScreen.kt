@@ -24,7 +24,7 @@ import androidx.compose.material3.AssistChipDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WordDetailScreen(word: String, onBack: () -> Unit, onOpenDrawer: () -> Unit) {
+fun WordDetailScreen(word: String, onBack: () -> Unit) {
     var translation by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
     var wordDetails by remember { mutableStateOf<Word?>(null) }
@@ -60,8 +60,8 @@ fun WordDetailScreen(word: String, onBack: () -> Unit, onOpenDrawer: () -> Unit)
         TopAppBar(
             title = { Text(word) },
             navigationIcon = {
-                IconButton(onClick = onOpenDrawer) {
-                    Icon(Icons.Default.Menu, contentDescription = "Menu")
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             }
         )

@@ -65,4 +65,17 @@ class WordRepositoryImpl @Inject constructor(
     override suspend fun updateWordDetails(word: Word) {
         database.wordDao().updateWord(WordMapper.mapToData(word))
     }
+
+    override fun getFavoriteWords(): Flow<List<Word>> {
+        return database.wordDao().getFavoriteWords().map { entities ->
+            entities.map { WordMapper.mapToDomain(it) }
+        }
+    }
+
+    override suspend fun toggleFavorite(word: String) {
+        val existingWord = getWordByText(word)
+        existingWord?.let {
+            database.wordDao().updateFavoriteStatus(word, !it.isFavorite)
+        }
+    }
 } 

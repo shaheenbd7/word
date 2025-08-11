@@ -39,7 +39,9 @@ fun WordsScreen(
                 }
             }
         )
-        LazyColumn(modifier = Modifier.padding(16.dp)) {
+        LazyColumn(
+            modifier = Modifier.padding(16.dp)
+        ) {
             items(uniqueWords) { word ->
                 Card(
                     modifier = Modifier
