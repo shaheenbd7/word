@@ -11,11 +11,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import com.shan.word.presentation.screen.MainScreen
 import com.shan.word.presentation.screen.WordsScreen
 import com.shan.word.presentation.screen.WordDetailScreen
+import com.shan.word.presentation.screen.AllWordsScreen
+import com.shan.word.presentation.screen.AppNavigationDrawer
 import com.shan.word.presentation.viewmodel.MainViewModel
 import com.shan.word.presentation.viewmodel.WordsViewModel
+import com.shan.word.presentation.viewmodel.AllWordsViewModel
 import com.shan.word.ui.theme.WordTheme
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -29,6 +36,7 @@ import java.io.InputStream
 class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels()
     private val wordsViewModel: WordsViewModel by viewModels()
+    private val allWordsViewModel: AllWordsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,34 +50,87 @@ class MainActivity : ComponentActivity() {
         setContent {
             WordTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "main") {
-                    composable("main") {
-                        MainScreen(
-                            onSelectPdf = { pdfPicker.launch("application/pdf") },
-                            onDeleteAll = { mainViewModel.deleteAllWords() },
-                            filenamesFlow = mainViewModel.filenames,
-                            onFileSelected = { filename ->
-                                mainViewModel.selectFilenameId(filename.id)
-                                navController.navigate("words/${filename.id}/${filename.name}")
-                            },
-                            parsingInProgress = mainViewModel.parsingInProgress,
-                            wordsFound = mainViewModel.wordsFound
-                        )
+                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                val scope = rememberCoroutineScope()
+                
+                AppNavigationDrawer(
+                    drawerState = drawerState,
+                    onSelectPdf = { pdfPicker.launch("application/pdf") },
+                    onDeleteAll = { mainViewModel.deleteAllWords() },
+                    onShowAllWords = {
+                        navController.navigate("allWords") {
+                            popUpTo("allWords") { inclusive = true }
+                        }
+                    },
+                    onSelectFile = {
+                        // This will be handled by the dropdown in MainScreen
+                        navController.navigate("main")
                     }
-                    composable("words/{filenameId}/{filenameName}") { backStackEntry ->
-                        val filenameId = backStackEntry.arguments?.getString("filenameId")?.toIntOrNull()
-                        val filenameName = backStackEntry.arguments?.getString("filenameName") ?: ""
-                        WordsScreen(
-                            filenameId = filenameId,
-                            filenameName = filenameName,
-                            wordsFlow = wordsViewModel.getWordsForFilename(filenameId ?: 0),
-                            onBack = { navController.popBackStack() },
-                            navController = navController
-                        )
-                    }
-                    composable("wordDetail/{word}") { backStackEntry ->
-                        val word = backStackEntry.arguments?.getString("word") ?: ""
-                        WordDetailScreen(word = word, onBack = { navController.popBackStack() })
+                ) {
+                    NavHost(navController = navController, startDestination = "allWords") {
+                        composable("allWords") {
+                            AllWordsScreen(
+                                wordsFlow = allWordsViewModel.allWords,
+                                onBack = { /* No back action needed for main screen */ },
+                                navController = navController,
+                                onOpenDrawer = {
+                                    scope.launch {
+                                        drawerState.open()
+                                    }
+                                }
+                            )
+                        }
+                        composable("main") {
+                            MainScreen(
+                                onSelectPdf = { pdfPicker.launch("application/pdf") },
+                                onDeleteAll = { mainViewModel.deleteAllWords() },
+                                filenamesFlow = mainViewModel.filenames,
+                                onFileSelected = { filename ->
+                                    mainViewModel.selectFilenameId(filename.id)
+                                    navController.navigate("words/${filename.id}/${filename.name}")
+                                },
+                                parsingInProgress = mainViewModel.parsingInProgress,
+                                wordsFound = mainViewModel.wordsFound,
+                                onOpenDrawer = {
+                                    scope.launch {
+                                        drawerState.open()
+                                    }
+                                },
+                                onShowAllWords = {
+                                    navController.navigate("allWords") {
+                                        popUpTo("allWords") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+                        composable("words/{filenameId}/{filenameName}") { backStackEntry ->
+                            val filenameId = backStackEntry.arguments?.getString("filenameId")?.toIntOrNull()
+                            val filenameName = backStackEntry.arguments?.getString("filenameName") ?: ""
+                            WordsScreen(
+                                filenameId = filenameId,
+                                filenameName = filenameName,
+                                wordsFlow = wordsViewModel.getWordsForFilename(filenameId ?: 0),
+                                onBack = { navController.popBackStack() },
+                                navController = navController,
+                                onOpenDrawer = {
+                                    scope.launch {
+                                        drawerState.open()
+                                    }
+                                }
+                            )
+                        }
+                        composable("wordDetail/{word}") { backStackEntry ->
+                            val word = backStackEntry.arguments?.getString("word") ?: ""
+                            WordDetailScreen(
+                                word = word, 
+                                onBack = { navController.popBackStack() },
+                                onOpenDrawer = {
+                                    scope.launch {
+                                        drawerState.open()
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }

@@ -3,5 +3,11 @@ package com.shan.word.domain.entity
 data class Word(
     val id: Int = 0,
     val word: String,
-    val filenameId: Int
+    val filenameId: Int,
+    val translation: String? = null,
+    val pronunciation: String? = null,
+    val synonyms: List<String> = emptyList(),
+    val antonyms: List<String> = emptyList(),
+    val examples: List<String> = emptyList(),
+    val definition: String? = null
 ) 

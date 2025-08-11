@@ -5,6 +5,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.shan.word.ui.theme.WordTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 @Preview(showBackground = true)
 @Composable
@@ -16,7 +17,12 @@ fun MainScreenPreview() {
             filenamesFlow = MutableStateFlow(emptyList()),
             onFileSelected = {},
             parsingInProgress = MutableStateFlow(false),
-            wordsFound = MutableStateFlow(0)
+            wordsFound = MutableStateFlow(0),
+            onOpenDrawer = {
+            },
+            onShowAllWords = {
+
+            }
         )
     }
 } 

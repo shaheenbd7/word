@@ -29,4 +29,10 @@ interface WordDao {
 
     @Query("SELECT * FROM filenames WHERE name = :name LIMIT 1")
     suspend fun getFilenameByName(name: String): FilenameEntity?
+
+    @Query("SELECT * FROM words WHERE word = :word LIMIT 1")
+    suspend fun getWordByText(word: String): WordEntity?
+
+    @Update
+    suspend fun updateWord(word: WordEntity)
 } 

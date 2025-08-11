@@ -57,4 +57,12 @@ class WordRepositoryImpl @Inject constructor(
     override suspend fun getFilenameByName(name: String): Filename? {
         return database.wordDao().getFilenameByName(name)?.let { FilenameMapper.mapToDomain(it) }
     }
+
+    override suspend fun getWordByText(word: String): Word? {
+        return database.wordDao().getWordByText(word)?.let { WordMapper.mapToDomain(it) }
+    }
+
+    override suspend fun updateWordDetails(word: Word) {
+        database.wordDao().updateWord(WordMapper.mapToData(word))
+    }
 } 

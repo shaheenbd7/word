@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -23,7 +24,8 @@ fun WordsScreen(
     filenameName: String,
     wordsFlow: StateFlow<List<Word>>,
     onBack: () -> Unit,
-    navController: NavHostController
+    navController: NavHostController,
+    onOpenDrawer: () -> Unit
 ) {
     val words by wordsFlow.collectAsState()
     val uniqueWords = remember(words) { words.map { it.word }.distinct() }
@@ -32,8 +34,8 @@ fun WordsScreen(
         TopAppBar(
             title = { Text(filenameName) },
             navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                IconButton(onClick = onOpenDrawer) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu")
                 }
             }
         )

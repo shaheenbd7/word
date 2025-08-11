@@ -11,4 +11,6 @@ interface WordRepository {
     suspend fun insertWords(words: List<String>, filename: String)
     suspend fun deleteAllWords()
     suspend fun getFilenameByName(name: String): Filename?
+    suspend fun getWordByText(word: String): Word?
+    suspend fun updateWordDetails(word: Word)
 } 

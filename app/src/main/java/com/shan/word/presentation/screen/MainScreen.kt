@@ -1,6 +1,8 @@
 package com.shan.word.presentation.screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,7 +18,9 @@ fun MainScreen(
     filenamesFlow: StateFlow<List<Filename>>,
     onFileSelected: (Filename) -> Unit,
     parsingInProgress: StateFlow<Boolean>,
-    wordsFound: StateFlow<Int>
+    wordsFound: StateFlow<Int>,
+    onOpenDrawer: () -> Unit,
+    onShowAllWords: () -> Unit
 ) {
     val filenames by filenamesFlow.collectAsState()
     val parsing by parsingInProgress.collectAsState()
@@ -25,18 +29,46 @@ fun MainScreen(
     var selectedFilename by remember { mutableStateOf<Filename?>(null) }
     
     Column(modifier = Modifier.fillMaxSize()) {
-        CenterAlignedTopAppBar(title = { Text("Word PDF Parser") })
+        TopAppBar(
+            title = { Text("Word PDF Parser") },
+            navigationIcon = {
+                IconButton(onClick = onOpenDrawer) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu")
+                }
+            }
+        )
+        
+        // Main content - now shows all words by default
         Column(modifier = Modifier.padding(16.dp)) {
-            Button(onClick = onSelectPdf) {
-                Text("Select PDF")
+            // Quick action buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onSelectPdf,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Select PDF")
+                }
+                
+                Button(
+                    onClick = onDeleteAll,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Delete All")
+                }
             }
+            
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onDeleteAll) {
-                Text("Delete All Words")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
+            
+            // File selection dropdown
             Box {
-                Button(onClick = { expanded = true }, enabled = filenames.isNotEmpty()) {
+                Button(
+                    onClick = { expanded = true },
+                    enabled = filenames.isNotEmpty(),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(selectedFilename?.name ?: "Select a file")
                 }
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -49,6 +81,7 @@ fun MainScreen(
                     }
                 }
             }
+            
             if (parsing) {
                 Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator(

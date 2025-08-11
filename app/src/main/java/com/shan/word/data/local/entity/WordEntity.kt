@@ -20,5 +20,11 @@ import androidx.room.PrimaryKey
 data class WordEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val word: String,
-    val filenameId: Int
+    val filenameId: Int,
+    val translation: String? = null,
+    val pronunciation: String? = null,
+    val synonyms: String? = null, // JSON string
+    val antonyms: String? = null, // JSON string
+    val examples: String? = null, // JSON string
+    val definition: String? = null
 ) 
