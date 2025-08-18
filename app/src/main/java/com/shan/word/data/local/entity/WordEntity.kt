@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.shan.word.domain.entity.WordStatus
 
 @Entity(
     tableName = "words",
@@ -28,6 +29,7 @@ data class WordEntity(
     val examples: String? = null, // JSON string
     val definition: String? = null,
     val isFavorite: Boolean = false,
+    val status: WordStatus = WordStatus.UNKNOWN,
     val audioUrl: String? = null,
     val partOfSpeech: String? = null,
     val lastUpdated: Long = System.currentTimeMillis()

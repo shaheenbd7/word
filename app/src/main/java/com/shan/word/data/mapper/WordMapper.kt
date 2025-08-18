@@ -22,6 +22,7 @@ object WordMapper {
             examples = entity.examples?.let { parseJsonList(it) } ?: emptyList(),
             definition = entity.definition,
             isFavorite = entity.isFavorite,
+            status = entity.status,
             audioUrl = entity.audioUrl,
             partOfSpeech = entity.partOfSpeech,
             lastUpdated = entity.lastUpdated
@@ -40,6 +41,7 @@ object WordMapper {
             examples = domain.examples.takeIf { it.isNotEmpty() }?.let { gson.toJson(it) },
             definition = domain.definition,
             isFavorite = domain.isFavorite,
+            status = domain.status,
             audioUrl = domain.audioUrl,
             partOfSpeech = domain.partOfSpeech,
             lastUpdated = domain.lastUpdated

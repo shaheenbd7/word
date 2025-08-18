@@ -3,6 +3,7 @@ package com.shan.word.data.local.dao
 import androidx.room.*
 import com.shan.word.data.local.entity.WordEntity
 import com.shan.word.data.local.entity.FilenameEntity
+import com.shan.word.domain.entity.WordStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -41,4 +42,10 @@ interface WordDao {
 
     @Query("UPDATE words SET isFavorite = :isFavorite WHERE word = :word")
     suspend fun updateFavoriteStatus(word: String, isFavorite: Boolean)
+
+    @Query("SELECT * FROM words WHERE status = :status")
+    suspend fun getWordsByStatus(status: WordStatus): List<WordEntity>
+
+    @Query("UPDATE words SET status = :status WHERE word = :word")
+    suspend fun updateWordStatus(word: String, status: WordStatus)
 } 

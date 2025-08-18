@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.launch
@@ -22,9 +23,13 @@ import com.shan.word.presentation.screen.WordDetailScreen
 import com.shan.word.presentation.screen.AllWordsScreen
 import com.shan.word.presentation.screen.HomeScreen
 import com.shan.word.presentation.screen.AppNavigationDrawer
+import com.shan.word.presentation.screen.FileParserScreen
 import com.shan.word.presentation.viewmodel.MainViewModel
 import com.shan.word.presentation.viewmodel.WordsViewModel
 import com.shan.word.presentation.viewmodel.AllWordsViewModel
+import com.shan.word.presentation.viewmodel.WordDetailViewModel
+import com.shan.word.presentation.viewmodel.FilteredWordsViewModel
+import com.shan.word.presentation.viewmodel.WordFilter
 import com.shan.word.ui.theme.WordTheme
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -39,6 +44,8 @@ class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels()
     private val wordsViewModel: WordsViewModel by viewModels()
     private val allWordsViewModel: AllWordsViewModel by viewModels()
+    private val wordDetailViewModel: WordDetailViewModel by viewModels()
+    private val filteredWordsViewModel: FilteredWordsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +55,14 @@ class MainActivity : ComponentActivity() {
 
         val pdfPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { processPdf(it) }
+        }
+
+        val documentPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { processDocument(it) }
+        }
+
+        val imagePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { processImage(it) }
         }
 
         setContent {
@@ -79,7 +94,7 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                     onSelectFile = {
-                        navController.navigate("main") {
+                        navController.navigate("fileParser") {
                             popUpTo("home") { inclusive = false }
                         }
                         scope.launch {
@@ -97,6 +112,16 @@ class MainActivity : ComponentActivity() {
                                         drawerState.open()
                                     }
                                 },
+                                onShowAllWords = {
+                                    navController.navigate("allWords") {
+                                        popUpTo("home") { inclusive = false }
+                                    }
+                                },
+                                onOpenFileParser = {
+                                    navController.navigate("fileParser") {
+                                        popUpTo("home") { inclusive = false }
+                                    }
+                                },
                                 parsingInProgress = mainViewModel.parsingInProgress.collectAsState().value,
                                 wordsFound = mainViewModel.wordsFound.collectAsState().value
                             )
@@ -110,7 +135,52 @@ class MainActivity : ComponentActivity() {
                                     scope.launch {
                                         drawerState.open()
                                     }
+                                },
+                                onFilterSelected = { filter ->
+                                    when (filter) {
+                                        WordFilter.ALL -> {
+                                            // Already showing all words
+                                        }
+                                        else -> {
+                                            navController.navigate("filteredWords/${filter.name}")
+                                        }
+                                    }
                                 }
+                            )
+                        }
+                        composable("filteredWords/{filter}") { backStackEntry ->
+                            val filterName = backStackEntry.arguments?.getString("filter") ?: "ALL"
+                            val filter = WordFilter.valueOf(filterName)
+                            val wordsFlow = when (filter) {
+                                WordFilter.ALL -> allWordsViewModel.allWords
+                                else -> {
+                                    filteredWordsViewModel.loadWords(filter)
+                                    filteredWordsViewModel.words
+                                }
+                            }
+                            AllWordsScreen(
+                                wordsFlow = wordsFlow,
+                                onBack = { navController.popBackStack() },
+                                navController = navController,
+                                onOpenDrawer = {
+                                    scope.launch {
+                                        drawerState.open()
+                                    }
+                                },
+                                currentFilter = filter
+                            )
+                        }
+                        composable("fileParser") {
+                            FileParserScreen(
+                                onBack = { navController.popBackStack() },
+                                onSelectFile = { mimeType ->
+                                    documentPicker.launch(mimeType)
+                                },
+                                onSelectImage = {
+                                    imagePicker.launch("image/*")
+                                },
+                                parsingInProgress = mainViewModel.parsingInProgress.collectAsState().value,
+                                wordsFound = mainViewModel.wordsFound.collectAsState().value
                             )
                         }
                         composable("main") {
@@ -154,9 +224,23 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("wordDetail/{word}") { backStackEntry ->
                             val word = backStackEntry.arguments?.getString("word") ?: ""
+                            LaunchedEffect(word) {
+                                wordDetailViewModel.loadWordDetails(word)
+                            }
+                            val wordDetails = wordDetailViewModel.wordDetails.collectAsState().value
                             WordDetailScreen(
                                 word = word, 
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                onToggleFavorite = { wordText ->
+                                    wordDetailViewModel.toggleFavorite(wordText)
+                                },
+                                onMarkAsKnown = { wordText ->
+                                    wordDetailViewModel.markAsKnown(wordText)
+                                },
+                                onMarkAsDiscarded = { wordText ->
+                                    wordDetailViewModel.markAsDiscarded(wordText)
+                                },
+                                wordDetails = wordDetails
                             )
                         }
                     }
@@ -186,6 +270,53 @@ class MainActivity : ComponentActivity() {
                 mainViewModel.insertWords(words, filename)
             }
             mainViewModel.setParsingInProgress(false)
+        }
+    }
+
+    private fun processDocument(uri: Uri) {
+        mainViewModel.setParsingInProgress(true)
+        mainViewModel.setWordsFound(0)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val inputStream: InputStream? = contentResolver.openInputStream(uri)
+                inputStream?.use {
+                    // For now, we'll handle different file types here
+                    // This is a simplified implementation
+                    val text = it.bufferedReader().use { reader -> reader.readText() }
+                    val words = text.split("\\W+".toRegex())
+                        .map { word -> word.trim().lowercase() }
+                        .filter { it.isNotBlank() && it.length > 2 && it.all { ch -> ch.isLetter() } }
+                        .distinct()
+                    
+                    words.forEachIndexed { idx, _ ->
+                        mainViewModel.setWordsFound(idx + 1)
+                    }
+                    val filename = getFileName(uri)
+                    mainViewModel.insertWords(words, filename)
+                }
+            } catch (e: Exception) {
+                // Handle error
+            } finally {
+                mainViewModel.setParsingInProgress(false)
+            }
+        }
+    }
+
+    private fun processImage(uri: Uri) {
+        mainViewModel.setParsingInProgress(true)
+        mainViewModel.setWordsFound(0)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // For now, we'll implement basic OCR here
+                // This would require additional OCR libraries like ML Kit Text Recognition
+                val filename = getFileName(uri)
+                // Placeholder for OCR implementation
+                mainViewModel.setWordsFound(0)
+            } catch (e: Exception) {
+                // Handle error
+            } finally {
+                mainViewModel.setParsingInProgress(false)
+            }
         }
     }
 

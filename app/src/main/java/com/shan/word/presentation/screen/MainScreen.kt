@@ -62,6 +62,16 @@ fun MainScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
+            // View All Words button
+            Button(
+                onClick = onShowAllWords,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("View All Words")
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
             // File selection dropdown
             Box {
                 Button(

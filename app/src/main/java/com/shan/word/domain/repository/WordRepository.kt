@@ -2,6 +2,7 @@ package com.shan.word.domain.repository
 
 import com.shan.word.domain.entity.Word
 import com.shan.word.domain.entity.Filename
+import com.shan.word.domain.entity.WordStatus
 import kotlinx.coroutines.flow.Flow
 
 interface WordRepository {
@@ -15,4 +16,7 @@ interface WordRepository {
     suspend fun updateWordDetails(word: Word)
     fun getFavoriteWords(): Flow<List<Word>>
     suspend fun toggleFavorite(word: String)
+    suspend fun getWordsByStatus(status: WordStatus): List<Word>
+    suspend fun markWordAsKnown(word: String)
+    suspend fun markWordAsDiscarded(word: String)
 } 

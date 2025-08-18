@@ -24,10 +24,16 @@ import androidx.compose.material3.AssistChipDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WordDetailScreen(word: String, onBack: () -> Unit) {
+fun WordDetailScreen(
+    word: String, 
+    onBack: () -> Unit,
+    onToggleFavorite: (String) -> Unit = {},
+    onMarkAsKnown: (String) -> Unit = {},
+    onMarkAsDiscarded: (String) -> Unit = {},
+    wordDetails: Word? = null
+) {
     var translation by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
-    var wordDetails by remember { mutableStateOf<Word?>(null) }
     val context = LocalContext.current
 
     LaunchedEffect(word) {
@@ -63,6 +69,26 @@ fun WordDetailScreen(word: String, onBack: () -> Unit) {
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
+            },
+            actions = {
+                // Favorite button
+                IconButton(
+                    onClick = { onToggleFavorite(word) }
+                ) {
+                    Icon(
+                        imageVector = if (wordDetails?.isFavorite == true) {
+                            Icons.Default.Favorite
+                        } else {
+                            Icons.Default.FavoriteBorder
+                        },
+                        contentDescription = "Toggle Favorite",
+                        tint = if (wordDetails?.isFavorite == true) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                }
             }
         )
         
@@ -81,6 +107,16 @@ fun WordDetailScreen(word: String, onBack: () -> Unit) {
                 // Word and Pronunciation
                 item {
                     WordHeader(word = word, pronunciation = wordDetails?.pronunciation)
+                }
+                
+                // Action Buttons
+                item {
+                    ActionButtons(
+                        word = word,
+                        onMarkAsKnown = onMarkAsKnown,
+                        onMarkAsDiscarded = onMarkAsDiscarded,
+                        currentStatus = wordDetails?.status
+                    )
                 }
                 
                 // Translation
@@ -121,6 +157,78 @@ fun WordDetailScreen(word: String, onBack: () -> Unit) {
 }
 
 @Composable
+fun ActionButtons(
+    word: String,
+    onMarkAsKnown: (String) -> Unit,
+    onMarkAsDiscarded: (String) -> Unit,
+    currentStatus: com.shan.word.domain.entity.WordStatus?
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Word Actions",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { onMarkAsKnown(word) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (currentStatus == com.shan.word.domain.entity.WordStatus.KNOWN) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.secondary
+                        }
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Known",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Known")
+                }
+                
+                Button(
+                    onClick = { onMarkAsDiscarded(word) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (currentStatus == com.shan.word.domain.entity.WordStatus.DISCARDED) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.secondary
+                        }
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Discard",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Discard")
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun WordHeader(word: String, pronunciation: String?) {
     Card(
         modifier = Modifier
@@ -143,7 +251,7 @@ fun WordHeader(word: String, pronunciation: String?) {
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp,
+                        imageVector = Icons.Default.Face, // VolumeUp,
                         contentDescription = "Pronunciation",
                         modifier = Modifier.size(20.dp),
                         tint = MaterialTheme.colorScheme.primary
@@ -238,11 +346,6 @@ fun SynonymsSection(synonyms: List<String>) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 synonyms.forEach { synonym ->
-//                    Chip(
-//                        onClick = { },
-//                        label = { Text(synonym) }
-//                    )
-
                     AssistChip(
                         onClick = { /* handle click */ },
                         label = { Text(synonym) }
@@ -277,11 +380,6 @@ fun AntonymsSection(antonyms: List<String>) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 antonyms.forEach { antonym ->
-//                    Chip(
-//                        onClick = { },
-//                        label = { androidx.compose.material3.Text(antonym) }
-//                    )
-
                     AssistChip(
                         onClick = { /* handle click */ },
                         label = { Text(antonym) }

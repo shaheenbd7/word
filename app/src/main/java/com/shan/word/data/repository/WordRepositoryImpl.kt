@@ -7,6 +7,7 @@ import com.shan.word.data.local.entity.WordEntity
 import com.shan.word.data.local.entity.FilenameEntity
 import com.shan.word.domain.entity.Word
 import com.shan.word.domain.entity.Filename
+import com.shan.word.domain.entity.WordStatus
 import com.shan.word.domain.repository.WordRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -77,5 +78,17 @@ class WordRepositoryImpl @Inject constructor(
         existingWord?.let {
             database.wordDao().updateFavoriteStatus(word, !it.isFavorite)
         }
+    }
+
+    override suspend fun getWordsByStatus(status: WordStatus): List<Word> {
+        return database.wordDao().getWordsByStatus(status).map { WordMapper.mapToDomain(it) }
+    }
+
+    override suspend fun markWordAsKnown(word: String) {
+        database.wordDao().updateWordStatus(word, WordStatus.KNOWN)
+    }
+
+    override suspend fun markWordAsDiscarded(word: String) {
+        database.wordDao().updateWordStatus(word, WordStatus.DISCARDED)
     }
 } 

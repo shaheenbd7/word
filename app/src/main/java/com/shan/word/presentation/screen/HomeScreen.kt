@@ -27,6 +27,8 @@ fun HomeScreen(
     onSelectPdf: () -> Unit,
     onDeleteAll: () -> Unit,
     onOpenDrawer: () -> Unit,
+    onShowAllWords: () -> Unit = {},
+    onOpenFileParser: () -> Unit = {},
     parsingInProgress: Boolean,
     wordsFound: Int
 ) {
@@ -77,7 +79,9 @@ fun HomeScreen(
             ) {
                 QuickActionsSection(
                     onSelectPdf = onSelectPdf,
-                    onDeleteAll = onDeleteAll
+                    onDeleteAll = onDeleteAll,
+                    onShowAllWords = onShowAllWords,
+                    onOpenFileParser = onOpenFileParser
                 )
             }
             
@@ -135,7 +139,7 @@ fun WelcomeSection() {
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Extract, translate, and learn words from your PDF documents",
+                text = "Extract, translate, and learn words from your documents",
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
@@ -147,7 +151,9 @@ fun WelcomeSection() {
 @Composable
 fun QuickActionsSection(
     onSelectPdf: () -> Unit,
-    onDeleteAll: () -> Unit
+    onDeleteAll: () -> Unit,
+    onShowAllWords: () -> Unit,
+    onOpenFileParser: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -160,15 +166,40 @@ fun QuickActionsSection(
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
+        // First row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             ActionCard(
-                icon = Icons.Default.Add,
+                icon = Icons.Default.Face,// PictureAsPdf
                 title = "Select PDF",
                 subtitle = "Extract words from PDF",
                 onClick = onSelectPdf,
+                modifier = Modifier.weight(1f)
+            )
+            
+            ActionCard(
+                icon = Icons.Default.Face, // Description,
+                title = "File Parser",
+                subtitle = "Parse various file types",
+                onClick = onOpenFileParser,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Second row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            ActionCard(
+                icon = Icons.Default.List,
+                title = "All Words",
+                subtitle = "View all extracted words",
+                onClick = onShowAllWords,
                 modifier = Modifier.weight(1f)
             )
             
@@ -250,13 +281,13 @@ fun StatsSection() {
             )
             
             FeatureItem(
-                icon = Icons.Default.Info,
+                icon = Icons.Default.Face, //Translate,
                 title = "Translation",
                 description = "Translate words to Bengali"
             )
             
             FeatureItem(
-                icon = Icons.Default.Info,
+                icon = Icons.Default.Face, // VolumeUp,
                 title = "Pronunciation",
                 description = "Listen to word pronunciation"
             )
@@ -268,9 +299,21 @@ fun StatsSection() {
             )
             
             FeatureItem(
-                icon = Icons.Default.Info,
-                title = "Export",
-                description = "Export word lists"
+                icon = Icons.Default.Face, // FilterList,
+                title = "Word Status",
+                description = "Mark words as known/unknown/discarded"
+            )
+            
+            FeatureItem(
+                icon = Icons.Default.Face, // Image,
+                title = "OCR Support",
+                description = "Extract text from images"
+            )
+            
+            FeatureItem(
+                icon = Icons.Default.Face, //Description,
+                title = "Multiple Formats",
+                description = "Support for PDF, Word, PPT, SRT, TXT, CSV"
             )
         }
     }
@@ -336,7 +379,7 @@ fun ParsingProgressSection(wordsFound: Int) {
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Parsing PDF...",
+                text = "Parsing file...",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSecondaryContainer

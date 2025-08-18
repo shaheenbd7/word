@@ -105,7 +105,7 @@ fun UserProfileSection() {
         )
         
         Text(
-            text = "PDF Word Extractor",
+            text = "Document Word Extractor",
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
@@ -125,20 +125,16 @@ fun DrawerMenuItems(
             .padding(vertical = 8.dp)
     ) {
         DrawerMenuItem(
-            icon = Icons.Default.Share,
+            icon = Icons.Default.Face, //PictureAsPdf,
             title = "Select PDF",
+            subtitle = "Extract words from PDF files",
             onClick = onSelectPdf
         )
         
         DrawerMenuItem(
-            icon = Icons.Default.Delete,
-            title = "Delete All Words",
-            onClick = onDeleteAll
-        )
-        
-        DrawerMenuItem(
-            icon = Icons.Default.Face,
-            title = "Select a File",
+            icon = Icons.Default.Face, // Description,
+            title = "File Parser",
+            subtitle = "Parse Word, PPT, SRT, TXT, CSV files",
             onClick = onSelectFile
         )
         
@@ -150,7 +146,20 @@ fun DrawerMenuItems(
         DrawerMenuItem(
             icon = Icons.Default.List,
             title = "All Words",
+            subtitle = "View all extracted words",
             onClick = onShowAllWords
+        )
+        
+        Divider(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+        )
+        
+        DrawerMenuItem(
+            icon = Icons.Default.Delete,
+            title = "Delete All Words",
+            subtitle = "Clear all extracted words",
+            onClick = onDeleteAll
         )
     }
 }
@@ -159,6 +168,7 @@ fun DrawerMenuItems(
 fun DrawerMenuItem(
     icon: ImageVector,
     title: String,
+    subtitle: String? = null,
     onClick: () -> Unit
 ) {
     Surface(
@@ -181,11 +191,20 @@ fun DrawerMenuItem(
             
             Spacer(modifier = Modifier.width(16.dp))
             
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Column {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                subtitle?.let {
+                    Text(
+                        text = it,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
         }
     }
 } 

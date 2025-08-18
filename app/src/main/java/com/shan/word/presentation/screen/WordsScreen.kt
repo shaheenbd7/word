@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.shan.word.domain.entity.Word
+import com.shan.word.domain.entity.WordStatus
 import kotlinx.coroutines.flow.StateFlow
 import java.net.URLEncoder
 
@@ -28,12 +29,22 @@ fun WordsScreen(
     onOpenDrawer: () -> Unit
 ) {
     val words by wordsFlow.collectAsState()
-    val uniqueWords = remember(words) { words.map { it.word }.distinct() }
+    val uniqueWords = remember(words) { 
+        words.filter { it.status != WordStatus.DISCARDED }
+            .map { it.word }
+            .distinct()
+            .sorted()
+    }
     
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text(filenameName) },
+            title = { Text("$filenameName (${uniqueWords.size})") },
             navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                }
+            },
+            actions = {
                 IconButton(onClick = onOpenDrawer) {
                     Icon(Icons.Default.Menu, contentDescription = "Menu")
                 }
