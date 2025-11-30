@@ -41,14 +41,17 @@ fun AllWordsScreen(
     }
     var searchQuery by remember { mutableStateOf("") }
     var showFilterMenu by remember { mutableStateOf(false) }
-    
+    var isLoading by remember { mutableStateOf(true) }
+
     // Debug: Log the number of words
     LaunchedEffect(words) {
         println("AllWordsScreen: Received ${words.size} words")
+        // Once we receive words (even empty list), we're no longer loading
+        isLoading = false
     }
-    
-    // Show loading state if no words are available yet
-    if (words.isEmpty()) {
+
+    // Show loading state if still loading
+    if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -59,6 +62,39 @@ fun AllWordsScreen(
                 CircularProgressIndicator()
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Loading words...")
+            }
+        }
+        return
+    }
+
+    // Show empty state when loading is complete but no words exist
+    if (uniqueWords.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Empty dictionary",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(64.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Dictionary is Empty",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "No words found. Try parsing a document first.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
             }
         }
         return
@@ -197,4 +233,4 @@ fun WordCard(
             )
         }
     }
-} 
+}
