@@ -21,6 +21,7 @@ import com.google.mlkit.nl.translate.Translation
 import com.shan.word.domain.entity.Word
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import com.shan.word.presentation.ui.GradientTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +64,7 @@ fun WordDetailScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
+        GradientTopAppBar(
             title = { Text(word) },
             navigationIcon = {
                 IconButton(onClick = onBack) {
@@ -417,4 +418,4 @@ fun ExamplesSection(examples: List<String>) {
             }
         }
     }
-} 
+}

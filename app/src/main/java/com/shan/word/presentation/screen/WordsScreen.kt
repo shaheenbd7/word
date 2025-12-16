@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.shan.word.domain.entity.Word
 import com.shan.word.domain.entity.WordStatus
+import com.shan.word.presentation.ui.GradientTopAppBar
 import kotlinx.coroutines.flow.StateFlow
 import java.net.URLEncoder
 
@@ -39,7 +40,7 @@ fun WordsScreen(
     }
     
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
+        GradientTopAppBar(
             title = { Text("$filenameName (${uniqueWords.size})") },
             navigationIcon = {
                 IconButton(onClick = onBack) {

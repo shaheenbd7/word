@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
+import com.shan.word.presentation.ui.GradientTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,7 +25,7 @@ fun FileParserScreen(
     wordsFound: Int = 0
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
+        GradientTopAppBar(
             title = { Text("File Parser") },
             navigationIcon = {
                 IconButton(onClick = onBack) {

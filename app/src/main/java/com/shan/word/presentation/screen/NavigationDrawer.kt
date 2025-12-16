@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -55,21 +56,26 @@ fun AppDrawerContent(
     onShowAllWords: () -> Unit,
     onSelectFile: () -> Unit
 ) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxHeight()
+            .width(300.dp)
             .windowInsetsPadding(WindowInsets.safeDrawing)
+            .padding(top = 64.dp) // Account for top app bar height
+            .background(
+            Brush.verticalGradient(
+                colors = listOf(
+                    MaterialTheme.colorScheme.primary,
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                    MaterialTheme.colorScheme.secondary
+                )
+            )
+        )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(300.dp)
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
             // User Profile Section
             UserProfileSection()
 
-            Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+            Divider(color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f))
 
             // Menu Items
             DrawerMenuItems(
@@ -78,7 +84,6 @@ fun AppDrawerContent(
                 onShowAllWords = onShowAllWords,
                 onSelectFile = onSelectFile
             )
-        }
     }
 }
 
@@ -113,13 +118,13 @@ fun UserProfileSection() {
             text = "Word Parser",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onPrimary
         )
-        
+
         Text(
             text = "Document Word Extractor",
             fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
         )
     }
 }
@@ -152,19 +157,19 @@ fun DrawerMenuItems(
         
         Divider(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
         )
-        
+
         DrawerMenuItem(
             icon = Icons.Default.List,
             title = "All Words",
             subtitle = "View all extracted words",
             onClick = onShowAllWords
         )
-        
+
         Divider(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
         )
         
         DrawerMenuItem(
@@ -197,23 +202,23 @@ fun DrawerMenuItem(
             Icon(
                 imageVector = icon,
                 contentDescription = title,
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                 modifier = Modifier.size(24.dp)
             )
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             Column {
                 Text(
                     text = title,
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 subtitle?.let {
                     Text(
                         text = it,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                     )
                 }
             }

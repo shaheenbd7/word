@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shan.word.domain.entity.Filename
+import com.shan.word.presentation.ui.GradientTopAppBar
 import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +30,7 @@ fun MainScreen(
     var selectedFilename by remember { mutableStateOf<Filename?>(null) }
     
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
+        GradientTopAppBar(
             title = { Text("Word PDF Parser") },
             navigationIcon = {
                 IconButton(onClick = onOpenDrawer) {
@@ -104,4 +105,4 @@ fun MainScreen(
             }
         }
     }
-} 
+}
