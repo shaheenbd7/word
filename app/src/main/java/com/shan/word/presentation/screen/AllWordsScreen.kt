@@ -6,9 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.shan.word.domain.entity.Word
 import com.shan.word.domain.entity.WordStatus
-import com.shan.word.presentation.viewmodel.WordFilter
 import kotlinx.coroutines.flow.StateFlow
 import java.net.URLEncoder
 
@@ -28,19 +25,16 @@ fun AllWordsScreen(
     wordsFlow: StateFlow<List<Word>>,
     onBack: () -> Unit,
     navController: NavHostController,
-    onOpenDrawer: () -> Unit,
-    onFilterSelected: (WordFilter) -> Unit = {},
-    currentFilter: WordFilter = WordFilter.ALL
+    onOpenDrawer: () -> Unit
 ) {
     val words by wordsFlow.collectAsState()
-    val uniqueWords = remember(words) { 
+    val uniqueWords = remember(words) {
         words.filter { it.status != WordStatus.DISCARDED }
             .map { it.word }
             .distinct()
-            .sorted() 
+            .sorted()
     }
     var searchQuery by remember { mutableStateOf("") }
-    var showFilterMenu by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
 
     // Debug: Log the number of words
@@ -116,14 +110,6 @@ fun AllWordsScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                },
-                actions = {
-                    IconButton(onClick = { showFilterMenu = true }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Filter")
-                    }
-                    IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
-                    }
                 }
             )
         }
@@ -132,32 +118,6 @@ fun AllWordsScreen(
             .fillMaxSize()
             .padding(paddingValues)
         ) {
-            // Filter Menu
-            DropdownMenu(
-                expanded = showFilterMenu,
-                onDismissRequest = { showFilterMenu = false }
-            ) {
-                WordFilter.values().forEach { filter ->
-                    DropdownMenuItem(
-                        onClick = {
-                            onFilterSelected(filter)
-                            showFilterMenu = false
-                        },
-                        text = {
-                            Text(
-                                text = when (filter) {
-                                    WordFilter.ALL -> "All Words"
-                                    WordFilter.KNOWN -> "Known Words"
-                                    WordFilter.UNKNOWN -> "Unknown Words"
-                                    WordFilter.DISCARDED -> "Discarded Words"
-                                    WordFilter.FAVORITES -> "Favorite Words"
-                                }
-                            )
-                        }
-                    )
-                }
-            }
-
             // Search Bar
             SearchBar(
                 query = searchQuery,

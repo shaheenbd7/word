@@ -29,6 +29,7 @@ fun HomeScreen(
     onOpenDrawer: () -> Unit,
     onShowAllWords: () -> Unit = {},
     onOpenFileParser: () -> Unit = {},
+    onOpenMyList: () -> Unit = {},
     parsingInProgress: Boolean,
     wordsFound: Int
 ) {
@@ -81,7 +82,8 @@ fun HomeScreen(
                     onSelectPdf = onSelectPdf,
                     onDeleteAll = onDeleteAll,
                     onShowAllWords = onShowAllWords,
-                    onOpenFileParser = onOpenFileParser
+                    onOpenFileParser = onOpenFileParser,
+                    onOpenMyList = onOpenMyList
                 )
             }
             
@@ -153,7 +155,8 @@ fun QuickActionsSection(
     onSelectPdf: () -> Unit,
     onDeleteAll: () -> Unit,
     onShowAllWords: () -> Unit,
-    onOpenFileParser: () -> Unit
+    onOpenFileParser: () -> Unit,
+    onOpenMyList: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -202,7 +205,23 @@ fun QuickActionsSection(
                 onClick = onShowAllWords,
                 modifier = Modifier.weight(1f)
             )
-            
+
+            ActionCard(
+                icon = Icons.Default.MoreVert,
+                title = "My List",
+                subtitle = "View categorized words",
+                onClick = onOpenMyList,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Third row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             ActionCard(
                 icon = Icons.Default.Delete,
                 title = "Clear All",
@@ -392,4 +411,4 @@ fun ParsingProgressSection(wordsFound: Int) {
             )
         }
     }
-} 
+}

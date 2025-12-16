@@ -27,7 +27,8 @@ fun AppNavigation(
     onSelectImage: () -> Unit,
     onDeleteAllWords: () -> Unit,
     onNavigateToAllWords: () -> Unit,
-    onNavigateToFileParser: () -> Unit
+    onNavigateToFileParser: () -> Unit,
+    onNavigateToMyList: () -> Unit
 ) {
     val onSelectPdfAction = {
         onSelectPdf()
@@ -72,6 +73,7 @@ fun AppNavigation(
                     },
                     onShowAllWords = onNavigateToAllWords,
                     onOpenFileParser = onNavigateToFileParser,
+                    onOpenMyList = onNavigateToMyList,
                     parsingInProgress = mainViewModel.parsingInProgress.collectAsState().value,
                     wordsFound = mainViewModel.wordsFound.collectAsState().value
                 )
@@ -85,17 +87,14 @@ fun AppNavigation(
                         scope.launch {
                             drawerState.open()
                         }
-                    },
-                    onFilterSelected = { filter ->
-                        when (filter) {
-                            WordFilter.ALL -> {
-                                // Already showing all words
-                            }
-                            else -> {
-                                navController.navigate("filteredWords/${filter.name}")
-                            }
-                        }
                     }
+                )
+            }
+            composable("myList") {
+                MyListScreen(
+                    wordsFlow = allWordsViewModel.allWords,
+                    onBack = { navController.popBackStack() },
+                    navController = navController
                 )
             }
             composable("filteredWords/{filter}") { backStackEntry ->
@@ -116,8 +115,7 @@ fun AppNavigation(
                         scope.launch {
                             drawerState.open()
                         }
-                    },
-                    currentFilter = filter
+                    }
                 )
             }
             composable("fileParser") {

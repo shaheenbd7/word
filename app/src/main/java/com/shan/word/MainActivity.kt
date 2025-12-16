@@ -22,6 +22,9 @@ import com.shan.word.ui.theme.WordTheme
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.google.mlkit.vision.common.InputImage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -71,6 +74,12 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                val onNavigateToMyList = {
+                    navController.navigate("myList") {
+                        popUpTo("home") { inclusive = false }
+                    }
+                }
+
                 AppNavigation(
                     navController = navController,
                     drawerState = drawerState,
@@ -85,7 +94,8 @@ class MainActivity : ComponentActivity() {
                     onSelectImage = { imagePicker.launch("image/*") },
                     onDeleteAllWords = { mainViewModel.deleteAllWords() },
                     onNavigateToAllWords = onNavigateToAllWords,
-                    onNavigateToFileParser = onNavigateToFileParser
+                    onNavigateToFileParser = onNavigateToFileParser,
+                    onNavigateToMyList = onNavigateToMyList
                 )
             }
         }
@@ -149,15 +159,42 @@ class MainActivity : ComponentActivity() {
         mainViewModel.setWordsFound(0)
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // For now, we'll implement basic OCR here
-                // This would require additional OCR libraries like ML Kit Text Recognition
-                val filename = getFileName(uri)
-                // Placeholder for OCR implementation
-                mainViewModel.setWordsFound(0)
+                val image = InputImage.fromFilePath(applicationContext, uri)
+                val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+                val task = recognizer.process(image)
+                task.addOnSuccessListener { visionText ->
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        try {
+                            val text = visionText.text
+                            val words = text.split("\\W+".toRegex())
+                                .map { it.trim().lowercase() }
+                                .filter { it.isNotBlank() && it.length > 2 && it.all { ch -> ch.isLetter() } }
+                                .distinct()
+
+                            // Update progress as we process words
+                            words.forEachIndexed { idx, _ ->
+                                mainViewModel.setWordsFound(idx + 1)
+                            }
+
+                            val filename = getFileName(uri)
+                            mainViewModel.insertWords(words, filename)
+                        } catch (e: Exception) {
+                            // Handle processing error
+                        } finally {
+                            mainViewModel.setParsingInProgress(false)
+                        }
+                    }
+                }.addOnFailureListener {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        mainViewModel.setParsingInProgress(false)
+                    }
+                }
             } catch (e: Exception) {
-                // Handle error
-            } finally {
-                mainViewModel.setParsingInProgress(false)
+                // Handle initialization error
+                lifecycleScope.launch(Dispatchers.Main) {
+                    mainViewModel.setParsingInProgress(false)
+                }
             }
         }
     }
