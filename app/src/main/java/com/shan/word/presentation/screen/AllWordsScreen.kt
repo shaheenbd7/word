@@ -108,71 +108,78 @@ fun AllWordsScreen(
         }
     }
     
-    Column(modifier = Modifier.fillMaxSize().padding(bottom = 30.dp)) {
-        TopAppBar(
-            title = { Text("All Words (${filteredWords.size})") },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                }
-            },
-            actions = {
-                IconButton(onClick = { showFilterMenu = true }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Filter")
-                }
-                IconButton(onClick = onOpenDrawer) {
-                    Icon(Icons.Default.Menu, contentDescription = "Menu")
-                }
-            }
-        )
-        
-        // Filter Menu
-        DropdownMenu(
-            expanded = showFilterMenu,
-            onDismissRequest = { showFilterMenu = false }
-        ) {
-            WordFilter.values().forEach { filter ->
-                DropdownMenuItem(
-                    onClick = {
-                        onFilterSelected(filter)
-                        showFilterMenu = false
-                    },
-                    text = { 
-                        Text(
-                            text = when (filter) {
-                                WordFilter.ALL -> "All Words"
-                                WordFilter.KNOWN -> "Known Words"
-                                WordFilter.UNKNOWN -> "Unknown Words"
-                                WordFilter.DISCARDED -> "Discarded Words"
-                                WordFilter.FAVORITES -> "Favorite Words"
-                            }
-                        )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("All Words (${filteredWords.size})") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                )
-            }
+                },
+                actions = {
+                    IconButton(onClick = { showFilterMenu = true }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Filter")
+                    }
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                    }
+                }
+            )
         }
-        
-        // Search Bar
-        SearchBar(
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-        
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
+    ) { paddingValues ->
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
         ) {
-            items(filteredWords) { word ->
-                WordCard(
-                    word = word,
-                    onClick = {
-                        val encodedWord = URLEncoder.encode(word, "UTF-8")
-                        navController.navigate("wordDetail/$encodedWord")
-                    }
-                )
+            // Filter Menu
+            DropdownMenu(
+                expanded = showFilterMenu,
+                onDismissRequest = { showFilterMenu = false }
+            ) {
+                WordFilter.values().forEach { filter ->
+                    DropdownMenuItem(
+                        onClick = {
+                            onFilterSelected(filter)
+                            showFilterMenu = false
+                        },
+                        text = {
+                            Text(
+                                text = when (filter) {
+                                    WordFilter.ALL -> "All Words"
+                                    WordFilter.KNOWN -> "Known Words"
+                                    WordFilter.UNKNOWN -> "Unknown Words"
+                                    WordFilter.DISCARDED -> "Discarded Words"
+                                    WordFilter.FAVORITES -> "Favorite Words"
+                                }
+                            )
+                        }
+                    )
+                }
+            }
+
+            // Search Bar
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                items(filteredWords) { word ->
+                    WordCard(
+                        word = word,
+                        onClick = {
+                            val encodedWord = URLEncoder.encode(word, "UTF-8")
+                            navController.navigate("wordDetail/$encodedWord")
+                        }
+                    )
+                }
             }
         }
     }

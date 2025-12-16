@@ -16,6 +16,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +42,9 @@ fun AppNavigationDrawer(
             )
         }
     ) {
-        content()
+        Box(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
+            content()
+        }
     }
 }
 
@@ -54,6 +60,7 @@ fun AppDrawerContent(
             .fillMaxHeight()
             .width(300.dp)
             .background(MaterialTheme.colorScheme.surface)
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
     ) {
         // User Profile Section
         UserProfileSection()
@@ -207,4 +214,4 @@ fun DrawerMenuItem(
             }
         }
     }
-} 
+}
