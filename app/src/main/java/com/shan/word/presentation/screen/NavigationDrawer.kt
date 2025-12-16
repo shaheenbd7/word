@@ -55,25 +55,30 @@ fun AppDrawerContent(
     onShowAllWords: () -> Unit,
     onSelectFile: () -> Unit
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxHeight()
-            .width(300.dp)
-            .background(MaterialTheme.colorScheme.surface)
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
+            .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
-        // User Profile Section
-        UserProfileSection()
-        
-        Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
-        
-        // Menu Items
-        DrawerMenuItems(
-            onSelectPdf = onSelectPdf,
-            onDeleteAll = onDeleteAll,
-            onShowAllWords = onShowAllWords,
-            onSelectFile = onSelectFile
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(300.dp)
+                .background(MaterialTheme.colorScheme.surface)
+        ) {
+            // User Profile Section
+            UserProfileSection()
+
+            Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+
+            // Menu Items
+            DrawerMenuItems(
+                onSelectPdf = onSelectPdf,
+                onDeleteAll = onDeleteAll,
+                onShowAllWords = onShowAllWords,
+                onSelectFile = onSelectFile
+            )
+        }
     }
 }
 
