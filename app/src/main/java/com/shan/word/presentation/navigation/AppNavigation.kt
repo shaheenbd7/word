@@ -28,7 +28,8 @@ fun AppNavigation(
     onDeleteAllWords: () -> Unit,
     onNavigateToAllWords: () -> Unit,
     onNavigateToFileParser: () -> Unit,
-    onNavigateToMyList: () -> Unit
+    onNavigateToMyList: () -> Unit,
+    onNavigateToWordSources: () -> Unit
 ) {
     val onSelectPdfAction = {
         onSelectPdf()
@@ -74,6 +75,7 @@ fun AppNavigation(
                     onShowAllWords = onNavigateToAllWords,
                     onOpenFileParser = onNavigateToFileParser,
                     onOpenMyList = onNavigateToMyList,
+                    onOpenWordSources = onNavigateToWordSources,
                     parsingInProgress = mainViewModel.parsingInProgress.collectAsState().value,
                     wordsFound = mainViewModel.wordsFound.collectAsState().value
                 )
@@ -93,6 +95,13 @@ fun AppNavigation(
             composable("myList") {
                 MyListScreen(
                     wordsFlow = allWordsViewModel.allWords,
+                    onBack = { navController.popBackStack() },
+                    navController = navController
+                )
+            }
+            composable("wordSources") {
+                WordSourcesScreen(
+                    filenamesFlow = mainViewModel.filenames,
                     onBack = { navController.popBackStack() },
                     navController = navController
                 )

@@ -114,8 +114,14 @@ fun WordDetailScreen(
                 item {
                     ActionButtons(
                         word = word,
-                        onMarkAsKnown = onMarkAsKnown,
-                        onMarkAsDiscarded = onMarkAsDiscarded,
+                        onMarkAsKnown = {
+                            onMarkAsKnown(word)
+                            onBack()
+                        },
+                        onMarkAsDiscarded = {
+                            onMarkAsDiscarded(word)
+                            onBack()
+                        },
                         currentStatus = wordDetails?.status
                     )
                 }

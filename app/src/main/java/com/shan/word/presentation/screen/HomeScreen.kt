@@ -30,6 +30,7 @@ fun HomeScreen(
     onShowAllWords: () -> Unit = {},
     onOpenFileParser: () -> Unit = {},
     onOpenMyList: () -> Unit = {},
+    onOpenWordSources: () -> Unit = {},
     parsingInProgress: Boolean,
     wordsFound: Int
 ) {
@@ -83,7 +84,8 @@ fun HomeScreen(
                     onDeleteAll = onDeleteAll,
                     onShowAllWords = onShowAllWords,
                     onOpenFileParser = onOpenFileParser,
-                    onOpenMyList = onOpenMyList
+                    onOpenMyList = onOpenMyList,
+                    onOpenWordSources = onOpenWordSources
                 )
             }
             
@@ -156,7 +158,8 @@ fun QuickActionsSection(
     onDeleteAll: () -> Unit,
     onShowAllWords: () -> Unit,
     onOpenFileParser: () -> Unit,
-    onOpenMyList: () -> Unit
+    onOpenMyList: () -> Unit,
+    onOpenWordSources: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -168,7 +171,7 @@ fun QuickActionsSection(
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
+
         // First row
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -181,7 +184,7 @@ fun QuickActionsSection(
                 onClick = onSelectPdf,
                 modifier = Modifier.weight(1f)
             )
-            
+
             ActionCard(
                 icon = Icons.Default.Face, // Description,
                 title = "File Parser",
@@ -190,9 +193,9 @@ fun QuickActionsSection(
                 modifier = Modifier.weight(1f)
             )
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Second row
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -222,6 +225,14 @@ fun QuickActionsSection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            ActionCard(
+                icon = Icons.Default.Home,
+                title = "Word Sources",
+                subtitle = "View words by source file",
+                onClick = onOpenWordSources,
+                modifier = Modifier.weight(1f)
+            )
+
             ActionCard(
                 icon = Icons.Default.Delete,
                 title = "Clear All",

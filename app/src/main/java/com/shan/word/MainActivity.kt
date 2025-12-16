@@ -80,6 +80,12 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                val onNavigateToWordSources = {
+                    navController.navigate("wordSources") {
+                        popUpTo("home") { inclusive = false }
+                    }
+                }
+
                 AppNavigation(
                     navController = navController,
                     drawerState = drawerState,
@@ -95,7 +101,8 @@ class MainActivity : ComponentActivity() {
                     onDeleteAllWords = { mainViewModel.deleteAllWords() },
                     onNavigateToAllWords = onNavigateToAllWords,
                     onNavigateToFileParser = onNavigateToFileParser,
-                    onNavigateToMyList = onNavigateToMyList
+                    onNavigateToMyList = onNavigateToMyList,
+                    onNavigateToWordSources = onNavigateToWordSources
                 )
             }
         }

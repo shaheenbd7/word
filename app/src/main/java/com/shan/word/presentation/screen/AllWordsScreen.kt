@@ -106,12 +106,7 @@ fun AllWordsScreen(
     Scaffold(
         topBar = {
             GradientTopAppBar(
-                title = { Text("All Words (${filteredWords.size})") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
+                title = { Text("All Words (${filteredWords.size})") }
             )
         }
     ) { paddingValues ->
