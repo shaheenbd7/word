@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.StateFlow
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    onSelectPdf: () -> Unit,
     onDeleteAll: () -> Unit,
     filenamesFlow: StateFlow<List<Filename>>,
     onFileSelected: (Filename) -> Unit,
@@ -42,25 +41,13 @@ fun MainScreen(
         // Main content - now shows all words by default
         Column(modifier = Modifier.padding(16.dp)) {
             // Quick action buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Button(
+                onClick = onDeleteAll,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Button(
-                    onClick = onSelectPdf,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Select PDF")
-                }
-                
-                Button(
-                    onClick = onDeleteAll,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Delete All")
-                }
+                Text("Delete All")
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
             
             // View All Words button

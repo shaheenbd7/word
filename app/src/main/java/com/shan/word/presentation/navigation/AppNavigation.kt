@@ -22,7 +22,6 @@ fun AppNavigation(
     allWordsViewModel: AllWordsViewModel,
     wordDetailViewModel: WordDetailViewModel,
     filteredWordsViewModel: FilteredWordsViewModel,
-    onSelectPdf: () -> Unit,
     onSelectDocument: (String) -> Unit,
     onSelectImage: () -> Unit,
     onDeleteAllWords: () -> Unit,
@@ -31,12 +30,6 @@ fun AppNavigation(
     onNavigateToMyList: () -> Unit,
     onNavigateToWordSources: () -> Unit
 ) {
-    val onSelectPdfAction = {
-        onSelectPdf()
-        scope.launch { drawerState.close() }
-        Unit
-    }
-
     val onDeleteAllAction = {
         onDeleteAllWords()
         scope.launch { drawerState.close() }
@@ -57,7 +50,6 @@ fun AppNavigation(
 
     AppNavigationDrawer(
         drawerState = drawerState,
-        onSelectPdf = onSelectPdfAction,
         onDeleteAll = onDeleteAllAction,
         onShowAllWords = onShowAllWordsAction,
         onSelectFile = onSelectFileAction
@@ -65,7 +57,6 @@ fun AppNavigation(
         NavHost(navController = navController, startDestination = "home") {
             composable("home") {
                 HomeScreen(
-                    onSelectPdf = onSelectPdf,
                     onDeleteAll = onDeleteAllWords,
                     onOpenDrawer = {
                         scope.launch {
@@ -138,7 +129,6 @@ fun AppNavigation(
             }
             composable("main") {
                 MainScreen(
-                    onSelectPdf = onSelectPdf,
                     onDeleteAll = onDeleteAllWords,
                     filenamesFlow = mainViewModel.filenames,
                     onFileSelected = { filename ->

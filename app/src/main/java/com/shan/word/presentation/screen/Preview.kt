@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 fun MainScreenPreview() {
     WordTheme {
         MainScreen(
-            onSelectPdf = {},
             onDeleteAll = {},
             filenamesFlow = MutableStateFlow(emptyList()),
             onFileSelected = {},
@@ -25,4 +24,4 @@ fun MainScreenPreview() {
             }
         )
     }
-} 
+}

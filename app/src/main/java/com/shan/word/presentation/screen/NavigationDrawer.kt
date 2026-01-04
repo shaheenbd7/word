@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 @Composable
 fun AppNavigationDrawer(
     drawerState: DrawerState,
-    onSelectPdf: () -> Unit,
     onDeleteAll: () -> Unit,
     onShowAllWords: () -> Unit,
     onSelectFile: () -> Unit,
@@ -36,7 +35,6 @@ fun AppNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             AppDrawerContent(
-                onSelectPdf = onSelectPdf,
                 onDeleteAll = onDeleteAll,
                 onShowAllWords = onShowAllWords,
                 onSelectFile = onSelectFile
@@ -51,7 +49,6 @@ fun AppNavigationDrawer(
 
 @Composable
 fun AppDrawerContent(
-    onSelectPdf: () -> Unit,
     onDeleteAll: () -> Unit,
     onShowAllWords: () -> Unit,
     onSelectFile: () -> Unit
@@ -79,7 +76,6 @@ fun AppDrawerContent(
 
             // Menu Items
             DrawerMenuItems(
-                onSelectPdf = onSelectPdf,
                 onDeleteAll = onDeleteAll,
                 onShowAllWords = onShowAllWords,
                 onSelectFile = onSelectFile
@@ -131,7 +127,6 @@ fun UserProfileSection() {
 
 @Composable
 fun DrawerMenuItems(
-    onSelectPdf: () -> Unit,
     onDeleteAll: () -> Unit,
     onShowAllWords: () -> Unit,
     onSelectFile: () -> Unit
@@ -142,19 +137,12 @@ fun DrawerMenuItems(
             .padding(vertical = 8.dp)
     ) {
         DrawerMenuItem(
-            icon = Icons.Default.Face, //PictureAsPdf,
-            title = "Select PDF",
-            subtitle = "Extract words from PDF files",
-            onClick = onSelectPdf
-        )
-        
-        DrawerMenuItem(
             icon = Icons.Default.Face, // Description,
             title = "File Parser",
-            subtitle = "Parse Word, PPT, SRT, TXT, CSV files",
+            subtitle = "Parse Word, PPT, SRT, TXT, CSV, PDF files",
             onClick = onSelectFile
         )
-        
+
         Divider(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
@@ -171,7 +159,7 @@ fun DrawerMenuItems(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
         )
-        
+
         DrawerMenuItem(
             icon = Icons.Default.Delete,
             title = "Delete All Words",

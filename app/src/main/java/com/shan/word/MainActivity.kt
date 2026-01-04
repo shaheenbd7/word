@@ -95,7 +95,6 @@ class MainActivity : ComponentActivity() {
                     allWordsViewModel = allWordsViewModel,
                     wordDetailViewModel = wordDetailViewModel,
                     filteredWordsViewModel = filteredWordsViewModel,
-                    onSelectPdf = { pdfPicker.launch("application/pdf") },
                     onSelectDocument = { mimeType -> documentPicker.launch(mimeType) },
                     onSelectImage = { imagePicker.launch("image/*") },
                     onDeleteAllWords = { mainViewModel.deleteAllWords() },

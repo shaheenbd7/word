@@ -24,7 +24,6 @@ import com.shan.word.presentation.ui.GradientTopAppBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onSelectPdf: () -> Unit,
     onDeleteAll: () -> Unit,
     onOpenDrawer: () -> Unit,
     onShowAllWords: () -> Unit = {},
@@ -35,12 +34,12 @@ fun HomeScreen(
     wordsFound: Int
 ) {
     var animationVisible by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(Unit) {
         delay(300)
         animationVisible = true
     }
-    
+
     Column(modifier = Modifier.fillMaxSize()) {
         GradientTopAppBar(
             title = { Text("Word Parser") },
@@ -50,7 +49,7 @@ fun HomeScreen(
                 }
             }
         )
-        
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -68,9 +67,9 @@ fun HomeScreen(
             ) {
                 WelcomeSection()
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Quick Actions
             AnimatedVisibility(
                 visible = animationVisible,
@@ -80,7 +79,6 @@ fun HomeScreen(
                 )
             ) {
                 QuickActionsSection(
-                    onSelectPdf = onSelectPdf,
                     onDeleteAll = onDeleteAll,
                     onShowAllWords = onShowAllWords,
                     onOpenFileParser = onOpenFileParser,
@@ -88,9 +86,9 @@ fun HomeScreen(
                     onOpenWordSources = onOpenWordSources
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Stats Section
             AnimatedVisibility(
                 visible = animationVisible,
@@ -98,7 +96,7 @@ fun HomeScreen(
             ) {
                 StatsSection()
             }
-            
+
             // Parsing Progress
             if (parsingInProgress) {
                 Spacer(modifier = Modifier.height(32.dp))
@@ -129,9 +127,9 @@ fun WelcomeSection() {
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Text(
                 text = "Welcome to Word Parser",
                 fontSize = 24.sp,
@@ -139,9 +137,9 @@ fun WelcomeSection() {
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = "Extract, translate, and learn words from your documents",
                 fontSize = 16.sp,
@@ -154,7 +152,6 @@ fun WelcomeSection() {
 
 @Composable
 fun QuickActionsSection(
-    onSelectPdf: () -> Unit,
     onDeleteAll: () -> Unit,
     onShowAllWords: () -> Unit,
     onOpenFileParser: () -> Unit,
@@ -178,18 +175,18 @@ fun QuickActionsSection(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             ActionCard(
-                icon = Icons.Default.Face,// PictureAsPdf
-                title = "Select PDF",
-                subtitle = "Extract words from PDF",
-                onClick = onSelectPdf,
-                modifier = Modifier.weight(1f)
-            )
-
-            ActionCard(
                 icon = Icons.Default.Face, // Description,
                 title = "File Parser",
                 subtitle = "Parse various file types",
                 onClick = onOpenFileParser,
+                modifier = Modifier.weight(1f)
+            )
+
+            ActionCard(
+                icon = Icons.Default.List,
+                title = "All Words",
+                subtitle = "View all extracted words",
+                onClick = onShowAllWords,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -202,18 +199,18 @@ fun QuickActionsSection(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             ActionCard(
-                icon = Icons.Default.List,
-                title = "All Words",
-                subtitle = "View all extracted words",
-                onClick = onShowAllWords,
-                modifier = Modifier.weight(1f)
-            )
-
-            ActionCard(
                 icon = Icons.Default.MoreVert,
                 title = "My List",
                 subtitle = "View categorized words",
                 onClick = onOpenMyList,
+                modifier = Modifier.weight(1f)
+            )
+
+            ActionCard(
+                icon = Icons.Default.Home,
+                title = "Word Sources",
+                subtitle = "View words by source file",
+                onClick = onOpenWordSources,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -225,14 +222,6 @@ fun QuickActionsSection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            ActionCard(
-                icon = Icons.Default.Home,
-                title = "Word Sources",
-                subtitle = "View words by source file",
-                onClick = onOpenWordSources,
-                modifier = Modifier.weight(1f)
-            )
-
             ActionCard(
                 icon = Icons.Default.Delete,
                 title = "Clear All",
@@ -272,16 +261,16 @@ fun ActionCard(
                 modifier = Modifier.size(32.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
-            
+
             Text(
                 text = subtitle,
                 fontSize = 12.sp,
@@ -309,37 +298,37 @@ fun StatsSection() {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            
+
             FeatureItem(
                 icon = Icons.Default.Face, //Translate,
                 title = "Translation",
                 description = "Translate words to Bengali"
             )
-            
+
             FeatureItem(
                 icon = Icons.Default.Face, // VolumeUp,
                 title = "Pronunciation",
                 description = "Listen to word pronunciation"
             )
-            
+
             FeatureItem(
                 icon = Icons.Default.Star,
                 title = "Favorites",
                 description = "Save your favorite words"
             )
-            
+
             FeatureItem(
                 icon = Icons.Default.Face, // FilterList,
                 title = "Word Status",
                 description = "Mark words as known/unknown/discarded"
             )
-            
+
             FeatureItem(
                 icon = Icons.Default.Face, // Image,
                 title = "OCR Support",
                 description = "Extract text from images"
             )
-            
+
             FeatureItem(
                 icon = Icons.Default.Face, //Description,
                 title = "Multiple Formats",
@@ -367,9 +356,9 @@ fun FeatureItem(
             modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.primary
         )
-        
+
         Spacer(modifier = Modifier.width(16.dp))
-        
+
         Column {
             Text(
                 text = title,
@@ -405,16 +394,16 @@ fun ParsingProgressSection(wordsFound: Int) {
                 color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 4.dp
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Text(
                 text = "Parsing file...",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
-            
+
             Text(
                 text = "$wordsFound words found",
                 fontSize = 14.sp,
